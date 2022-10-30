@@ -262,6 +262,12 @@ defmodule WebDriverClient.JSONWireProtocolClient.TestResponses do
     |> map(&Jason.encode!/1)
   end
 
+  def switch_to_default_content_response do
+    nil
+    |> jwp_response()
+    |> map(&Jason.encode!/1)
+  end
+
   def log_entry do
     gen all required_data <-
               fixed_map(%{
