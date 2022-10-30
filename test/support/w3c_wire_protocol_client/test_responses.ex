@@ -236,6 +236,12 @@ defmodule WebDriverClient.W3CWireProtocolClient.TestResponses do
     %{"value" => nil} |> constant() |> map(&Jason.encode!/1)
   end
 
+  def execute_script_response do
+    %{"value" => string(:alphanumeric)}
+    |> fixed_map()
+    |> map(&Jason.encode!/1)
+  end
+
   def log_entry do
     fixed_map(%{
       "timestamp" => recent_timestamp(),

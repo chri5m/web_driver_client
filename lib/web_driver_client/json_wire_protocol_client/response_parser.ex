@@ -273,6 +273,11 @@ defmodule WebDriverClient.JSONWireProtocolClient.ResponseParser do
     UnexpectedResponseError.exception(response_body: body, http_status_code: status)
   end
 
+  @spec parse_script_data(Response.t()) :: {:ok, any()}
+  def parse_script_data(%Response{value: data}) do
+    {:ok, data}
+  end
+
   @json_content_type "application/json"
 
   defp parse_json(%HTTPResponse{body: body, status: status} = http_response) do

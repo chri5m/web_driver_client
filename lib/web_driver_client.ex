@@ -802,6 +802,23 @@ defmodule WebDriverClient do
     end
   end
 
+  @doc """
+  Executes a script.
+  """
+  @spec execute_script(Session.t(), String.t(), Keyword.t()) :: {:ok, any()} | {:error, reason}
+  def execute_script(%Session{config: %Config{protocol: protocol}} = session, script, opts \\ []) do
+    with {:ok, http_response} <-
+           send_request_for_protocol(protocol,
+             jwp: fn -> JWPCommands.ExecuteScript.send_request(session, script, opts) end,
+             w3c: fn -> W3CCommands.ExecuteScript.send_request(session, script, opts) end
+           ) do
+      parse_with_fallbacks(http_response, protocol,
+        jwp: &JWPCommands.ExecuteScript.parse_response/1,
+        w3c: &W3CCommands.ExecuteScript.parse_response/1
+      )
+    end
+  end
+
   @spec to_log_entry(JSONWireProtocolClient.LogEntry.t()) :: LogEntry.t()
   defp to_log_entry(%JSONWireProtocolClient.LogEntry{} = log_entry) do
     log_entry
