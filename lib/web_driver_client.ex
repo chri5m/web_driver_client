@@ -836,6 +836,23 @@ defmodule WebDriverClient do
     end
   end
 
+  @doc """
+  Switches to parent frame.
+  """
+  @spec switch_to_parent_frame(Session.t()) :: :ok | {:error, reason}
+  def switch_to_parent_frame(%Session{config: %Config{protocol: protocol}} = session) do
+    with {:ok, http_response} <-
+           send_request_for_protocol(protocol,
+             jwp: fn -> JWPCommands.SwitchToParentFrame.send_request(session) end,
+             w3c: fn -> W3CCommands.SwitchToParentFrame.send_request(session) end
+           ) do
+      parse_with_fallbacks(http_response, protocol,
+        jwp: &JWPCommands.SwitchToParentFrame.parse_response/1,
+        w3c: &W3CCommands.SwitchToParentFrame.parse_response/1
+      )
+    end
+  end
+
   @spec to_log_entry(JSONWireProtocolClient.LogEntry.t()) :: LogEntry.t()
   defp to_log_entry(%JSONWireProtocolClient.LogEntry{} = log_entry) do
     log_entry
