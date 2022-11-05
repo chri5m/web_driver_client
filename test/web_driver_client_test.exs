@@ -1459,6 +1459,55 @@ defmodule WebDriverClientTest do
     end
   end
 
+  @tag protocol: :w3c
+  test "take_screenshot_element/2 with w3c session returns {:ok, image_data} on success", %{
+    config: config,
+    bypass: bypass
+  } do
+    session = TestData.session(config: constant(config)) |> pick()
+    resp = W3CTestResponses.take_screenshot_response() |> pick()
+    stub_bypass_response(bypass, resp)
+    element = TestData.element() |> pick()
+
+    assert {:ok, image_data} = WebDriverClient.take_screenshot_element(session, element)
+    assert is_binary(image_data)
+  end
+
+  @tag protocol: :jwp
+  test "take_screenshot_element/2 with JWP session returns {:ok, image_data} on success", %{
+    config: config,
+    bypass: bypass
+  } do
+    session = TestData.session(config: constant(config)) |> pick()
+    resp = JWPTestResponses.take_screenshot_response() |> pick()
+    stub_bypass_response(bypass, resp)
+    element = TestData.element() |> pick()
+
+    assert {:ok, image_data} = WebDriverClient.take_screenshot_element(session, element)
+    assert is_binary(image_data)
+  end
+
+  for protocol <- @protocols do
+    @tag protocol: protocol
+    test "take_screenshot_element/2 with #{protocol} session returns appropriate errors on various server responses",
+         %{config: config, bypass: bypass, protocol: protocol} do
+      scenario_server = set_up_error_scenario_tests(protocol, bypass)
+
+      for error_scenario <- basic_error_scenarios(protocol) do
+        session =
+          build_session_for_scenario(protocol, scenario_server, bypass, config, error_scenario)
+
+        element = TestData.element() |> pick()
+
+        assert_expected_response(
+          protocol,
+          WebDriverClient.take_screenshot_element(session, element),
+          error_scenario
+        )
+      end
+    end
+  end
+
   @tag protocol: :jwp
   test "fetch_cookies/2 with JWP session returns {:ok, cookies} on valid response", %{
     config: config,

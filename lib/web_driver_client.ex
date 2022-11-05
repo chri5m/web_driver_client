@@ -715,6 +715,23 @@ defmodule WebDriverClient do
   end
 
   @doc """
+  Takes a screenshot of a specific element.
+  """
+  @spec take_screenshot_element(Session.t(), Element.t()) :: {:ok, binary} | {:error, reason}
+  def take_screenshot_element(%Session{config: %Config{protocol: protocol}} = session, element) do
+    with {:ok, http_response} <-
+           send_request_for_protocol(protocol,
+             jwp: fn -> JWPCommands.TakeScreenshotElement.send_request(session, element) end,
+             w3c: fn -> W3CCommands.TakeScreenshotElement.send_request(session, element) end
+           ) do
+      parse_with_fallbacks(http_response, protocol,
+        jwp: &JWPCommands.TakeScreenshotElement.parse_response/1,
+        w3c: &W3CCommands.TakeScreenshotElement.parse_response/1
+      )
+    end
+  end
+
+  @doc """
   Fetches all cookies visible to the current web page.
   """
   @spec fetch_cookies(Session.t()) :: {:ok, [Cookie.t()]} | {:error, reason}
