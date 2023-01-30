@@ -745,6 +745,67 @@ defmodule WebDriverClientTest do
   end
 
   @tag protocol: :w3c
+  test "find_element_from_element/4 with W3C session returns {:ok, element} on valid response",
+       %{
+         config: config,
+         bypass: bypass
+       } do
+    session = TestData.session(config: constant(config)) |> pick()
+    element = TestData.element() |> pick()
+    resp = W3CTestResponses.find_element_response() |> pick()
+
+    stub_bypass_response(bypass, resp)
+
+    Enum.each([:css_selector, :xpath], fn strategy ->
+      assert {:ok, element} =
+               WebDriverClient.find_element_from_element(session, element, strategy, "foo")
+
+      assert match?(%Element{}, element)
+    end)
+  end
+
+  @tag protocol: :jwp
+  test "find_element_from_element/4 with JWP session returns {:ok, element} on valid response",
+       %{
+         config: config,
+         bypass: bypass
+       } do
+    session = TestData.session(config: constant(config)) |> pick()
+    element = TestData.element() |> pick()
+    resp = JWPTestResponses.find_element_response() |> pick()
+
+    stub_bypass_response(bypass, resp)
+
+    Enum.each([:css_selector, :xpath], fn strategy ->
+      assert {:ok, element} =
+               WebDriverClient.find_element_from_element(session, element, strategy, "foo")
+
+      assert match?(%Element{}, element)
+    end)
+  end
+
+  for protocol <- @protocols do
+    @tag protocol: protocol
+    test "find_element_from_element/4 with #{protocol} session returns appropriate errors on various server responses",
+         %{config: config, bypass: bypass, protocol: protocol} do
+      scenario_server = set_up_error_scenario_tests(protocol, bypass)
+
+      for error_scenario <- basic_error_scenarios(protocol) do
+        session =
+          build_session_for_scenario(protocol, scenario_server, bypass, config, error_scenario)
+
+        element = TestData.element() |> pick()
+
+        assert_expected_response(
+          protocol,
+          WebDriverClient.find_element_from_element(session, element, :css_selector, "foo"),
+          error_scenario
+        )
+      end
+    end
+  end
+
+  @tag protocol: :w3c
   test "find_elements_from_element/4 with W3C session returns {:ok, elements} on valid response",
        %{
          config: config,

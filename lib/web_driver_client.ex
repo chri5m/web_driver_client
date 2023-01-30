@@ -274,6 +274,51 @@ defmodule WebDriverClient do
   end
 
   @doc """
+  Finds element that is child of the given element
+  """
+  doc_metadata subject: :elements
+
+  @spec find_element_from_element(
+          Session.t(),
+          Element.t(),
+          element_location_strategy,
+          element_selector
+        ) :: {:ok, Element.t() | {:error, reason}}
+  def find_element_from_element(
+        %Session{config: %Config{protocol: protocol}} = session,
+        %Element{} = element,
+        element_location_strategy,
+        element_selector
+      )
+      when is_element_location_strategy(element_location_strategy) and
+             is_element_selector(element_selector) do
+    with {:ok, http_response} <-
+           send_request_for_protocol(protocol,
+             jwp: fn ->
+               JWPCommands.FindElementFromElement.send_request(
+                 session,
+                 element,
+                 element_location_strategy,
+                 element_selector
+               )
+             end,
+             w3c: fn ->
+               W3CCommands.FindElementFromElement.send_request(
+                 session,
+                 element,
+                 element_location_strategy,
+                 element_selector
+               )
+             end
+           ) do
+      parse_with_fallbacks(http_response, protocol,
+        jwp: &JWPCommands.FindElementFromElement.parse_response/1,
+        w3c: &W3CCommands.FindElementFromElement.parse_response/1
+      )
+    end
+  end
+
+  @doc """
   Finds elements that are children of the given element
   """
   doc_metadata subject: :elements
