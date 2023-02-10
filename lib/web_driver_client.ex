@@ -208,6 +208,31 @@ defmodule WebDriverClient do
     end
   end
 
+  @doc """
+  Maximizes the size of the current window
+  """
+  @spec maximize_window(Session.t()) :: {:ok, Size.t()} | {:error, reason}
+  def maximize_window(%Session{config: %Config{protocol: protocol}} = session) do
+    with {:ok, http_response} <-
+           send_request_for_protocol(protocol,
+             jwp: fn -> JWPCommands.MaximizeWindow.send_request(session) end,
+             w3c: fn -> W3CCommands.MaximizeWindow.send_request(session) end
+           ) do
+      parse_with_fallbacks(
+        http_response,
+        protocol,
+        [
+          jwp: &JWPCommands.MaximizeWindow.parse_response/1,
+          w3c: &W3CCommands.MaximizeWindow.parse_response/1
+        ],
+        fn
+          {:ok, size} -> {:ok, to_size(size)}
+          {:error, error} -> {:error, to_error(error)}
+        end
+      )
+    end
+  end
+
   @type element_location_strategy :: :css_selector | :xpath
   @type element_selector :: String.t()
 
