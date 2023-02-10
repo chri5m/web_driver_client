@@ -109,6 +109,25 @@ defmodule WebDriverClient do
   end
 
   @doc """
+  Refresh the browser's current page
+  """
+  doc_metadata subject: :navigation
+  @spec refresh(Session.t()) :: :ok | {:error, reason}
+
+  def refresh(%Session{config: %Config{protocol: protocol}} = session) do
+    with {:ok, http_response} <-
+           send_request_for_protocol(protocol,
+             jwp: fn -> JWPCommands.Refresh.send_request(session) end,
+             w3c: fn -> W3CCommands.Refresh.send_request(session) end
+           ) do
+      parse_with_fallbacks(http_response, protocol,
+        jwp: &JWPCommands.Refresh.parse_response/1,
+        w3c: &W3CCommands.Refresh.parse_response/1
+      )
+    end
+  end
+
+  @doc """
   Returns the web browsers current url
   """
   doc_metadata subject: :navigation

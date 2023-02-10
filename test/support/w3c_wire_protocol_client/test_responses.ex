@@ -106,6 +106,10 @@ defmodule WebDriverClient.W3CWireProtocolClient.TestResponses do
     constant(%{"value" => nil}) |> map(&Jason.encode!/1)
   end
 
+  def refresh_response do
+    constant(%{"value" => nil}) |> map(&Jason.encode!/1)
+  end
+
   def fetch_window_rect_response do
     window_rect_response() |> map(&Jason.encode!/1)
   end

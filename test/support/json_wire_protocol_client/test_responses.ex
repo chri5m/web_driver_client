@@ -80,6 +80,12 @@ defmodule WebDriverClient.JSONWireProtocolClient.TestResponses do
     |> map(&Jason.encode!/1)
   end
 
+  def refresh_response do
+    nil
+    |> jwp_response()
+    |> map(&Jason.encode!/1)
+  end
+
   def fetch_window_size_response do
     %{
       "width" => integer(0..1000),

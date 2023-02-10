@@ -207,6 +207,55 @@ defmodule WebDriverClientTest do
     end
   end
 
+  @tag protocol: :jwp
+  test "refresh/2 with jwp session returns :ok on success", %{
+    config: config,
+    bypass: bypass
+  } do
+    session = TestData.session(config: constant(config)) |> pick()
+    resp = JWPTestResponses.navigate_to_response() |> pick()
+    browser_url = "http://foo.bar.example"
+
+    stub_bypass_response(bypass, resp)
+
+    assert :ok = WebDriverClient.navigate_to(session, browser_url)
+    assert :ok = WebDriverClient.refresh(session)
+  end
+
+  @tag protocol: :w3c
+  test "refresh/2 with w3c session returns :ok on success", %{
+    config: config,
+    bypass: bypass
+  } do
+    session = TestData.session(config: constant(config)) |> pick()
+    resp = W3CTestResponses.navigate_to_response() |> pick()
+    browser_url = "http://foo.bar.example"
+
+    stub_bypass_response(bypass, resp)
+
+    assert :ok = WebDriverClient.navigate_to(session, browser_url)
+    assert :ok = WebDriverClient.refresh(session)
+  end
+
+  for protocol <- @protocols do
+    @tag protocol: protocol
+    test "refresh/2 with #{protocol} session returns appropriate errors on various server responses",
+         %{config: config, bypass: bypass, protocol: protocol} do
+      scenario_server = set_up_error_scenario_tests(protocol, bypass)
+
+      for error_scenario <- basic_error_scenarios(protocol) do
+        session =
+          build_session_for_scenario(protocol, scenario_server, bypass, config, error_scenario)
+
+        assert_expected_response(
+          protocol,
+          WebDriverClient.refresh(session),
+          error_scenario
+        )
+      end
+    end
+  end
+
   @tag protocol: :w3c
   test "fetch_current_url/1 with w3c session returns {:ok, url} on success", %{
     config: config,
