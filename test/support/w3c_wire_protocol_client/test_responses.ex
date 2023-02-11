@@ -82,6 +82,10 @@ defmodule WebDriverClient.W3CWireProtocolClient.TestResponses do
     constant(%{"value" => nil}) |> map(&Jason.encode!/1)
   end
 
+  def fetch_timeouts_response do
+    timeouts() |> map(&Jason.encode!/1)
+  end
+
   def set_timeouts_response do
     constant(%{"value" => nil}) |> map(&Jason.encode!/1)
   end
@@ -310,6 +314,17 @@ defmodule WebDriverClient.W3CWireProtocolClient.TestResponses do
 
   def element do
     fixed_map(%{@web_element_identifier => string(:ascii, min_length: 1, max_length: 20)})
+  end
+
+  defp timeouts do
+    fixed_map(%{
+      "value" =>
+        fixed_map(%{
+          "implicit" => integer(0..10000),
+          "pageLoad" => integer(0..10000),
+          "script" => integer(0..10000)
+        })
+    })
   end
 
   defp window_rect_response do

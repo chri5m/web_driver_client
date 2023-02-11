@@ -161,6 +161,53 @@ defmodule WebDriverClientTest do
   end
 
   @tag protocol: :jwp
+  test "fetch_timeouts/2 with jwp session returns {:ok, timeouts} on success", %{
+    config: config,
+    bypass: bypass
+  } do
+    session = TestData.session(config: constant(config)) |> pick()
+    resp = JWPTestResponses.fetch_timeouts_response() |> pick()
+
+    stub_bypass_response(bypass, resp)
+
+    assert {:ok, %{"implicit" => _x, "pageLoad" => _y, "script" => _z}} =
+             WebDriverClient.fetch_timeouts(session)
+  end
+
+  @tag protocol: :w3c
+  test "fetch_timeouts/2 with w3c session returns {:ok, timeouts} on success", %{
+    config: config,
+    bypass: bypass
+  } do
+    session = TestData.session(config: constant(config)) |> pick()
+    resp = W3CTestResponses.fetch_timeouts_response() |> pick()
+
+    stub_bypass_response(bypass, resp)
+
+    assert {:ok, %{"implicit" => _x, "pageLoad" => _y, "script" => _z}} =
+             WebDriverClient.fetch_timeouts(session)
+  end
+
+  for protocol <- @protocols do
+    @tag protocol: protocol
+    test "fetch_timeouts/2 with #{protocol} session returns appropriate errors on various server responses",
+         %{config: config, bypass: bypass, protocol: protocol} do
+      scenario_server = set_up_error_scenario_tests(protocol, bypass)
+
+      for error_scenario <- basic_error_scenarios(protocol) do
+        session =
+          build_session_for_scenario(protocol, scenario_server, bypass, config, error_scenario)
+
+        assert_expected_response(
+          protocol,
+          WebDriverClient.fetch_timeouts(session),
+          error_scenario
+        )
+      end
+    end
+  end
+
+  @tag protocol: :jwp
   test "set_timeouts/2 with jwp session returns :ok on success", %{
     config: config,
     bypass: bypass
