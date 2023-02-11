@@ -82,6 +82,10 @@ defmodule WebDriverClient.W3CWireProtocolClient.TestResponses do
     constant(%{"value" => nil}) |> map(&Jason.encode!/1)
   end
 
+  def set_timeouts_response do
+    constant(%{"value" => nil}) |> map(&Jason.encode!/1)
+  end
+
   def error_response do
     error_reason = "invalid selector"
 

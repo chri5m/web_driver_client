@@ -89,6 +89,25 @@ defmodule WebDriverClient do
   end
 
   @doc """
+  Sets the timeouts
+  """
+  doc_metadata subject: :sessions
+  @spec set_timeouts(Session.t(), map()) :: :ok | {:error, reason}
+  def set_timeouts(%Session{config: %Config{protocol: protocol}} = session, payload)
+      when is_map(payload) do
+    with {:ok, http_response} <-
+           send_request_for_protocol(protocol,
+             jwp: fn -> JWPCommands.SetTimeouts.send_request(session, payload) end,
+             w3c: fn -> W3CCommands.SetTimeouts.send_request(session, payload) end
+           ) do
+      parse_with_fallbacks(http_response, protocol,
+        jwp: &JWPCommands.SetTimeouts.parse_response/1,
+        w3c: &W3CCommands.SetTimeouts.parse_response/1
+      )
+    end
+  end
+
+  @doc """
   Navigates the browser to the given url
   """
   doc_metadata subject: :navigation
