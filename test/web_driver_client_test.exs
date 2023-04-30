@@ -7,6 +7,7 @@ defmodule WebDriverClientTest do
   alias WebDriverClient.ConnectionError
   alias WebDriverClient.Cookie
   alias WebDriverClient.Element
+  alias WebDriverClient.ShadowRoot
   alias WebDriverClient.JSONWireProtocolClient.ErrorScenarios, as: JWPErrorScenarios
   alias WebDriverClient.JSONWireProtocolClient.TestResponses, as: JWPTestResponses
   alias WebDriverClient.LogEntry
@@ -1029,6 +1030,61 @@ defmodule WebDriverClientTest do
         assert_expected_response(
           protocol,
           WebDriverClient.find_elements_from_element(session, element, :css_selector, "foo"),
+          error_scenario
+        )
+      end
+    end
+  end
+
+  @tag protocol: :w3c
+  test "find_shadow_root_element/2 with W3C session returns {:ok, shadow_root} on valid response",
+       %{
+         config: config,
+         bypass: bypass
+       } do
+    session = TestData.session(config: constant(config)) |> pick()
+    element = TestData.element() |> pick()
+    resp = W3CTestResponses.find_shadow_root_response() |> pick()
+
+    stub_bypass_response(bypass, resp)
+
+    assert {:ok, shadow_root} = WebDriverClient.find_shadow_root_element(session, element)
+
+    assert match?(%ShadowRoot{}, shadow_root)
+  end
+
+  @tag protocol: :jwp
+  test "find_shadow_root_element/2 with JWP session returns {:ok, shadow_root} on valid response",
+       %{
+         config: config,
+         bypass: bypass
+       } do
+    session = TestData.session(config: constant(config)) |> pick()
+    element = TestData.element() |> pick()
+    resp = JWPTestResponses.find_shadow_root_response() |> pick()
+
+    stub_bypass_response(bypass, resp)
+
+    assert {:ok, shadow_root} = WebDriverClient.find_shadow_root_element(session, element)
+
+    assert match?(%ShadowRoot{}, shadow_root)
+  end
+
+  for protocol <- @protocols do
+    @tag protocol: protocol
+    test "find_shadow_root_element/2 with #{protocol} session returns appropriate errors on various server responses",
+         %{config: config, bypass: bypass, protocol: protocol} do
+      scenario_server = set_up_error_scenario_tests(protocol, bypass)
+
+      for error_scenario <- basic_error_scenarios(protocol) do
+        session =
+          build_session_for_scenario(protocol, scenario_server, bypass, config, error_scenario)
+
+        element = TestData.element() |> pick()
+
+        assert_expected_response(
+          protocol,
+          WebDriverClient.find_shadow_root_element(session, element),
           error_scenario
         )
       end

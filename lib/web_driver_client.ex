@@ -18,6 +18,7 @@ defmodule WebDriverClient do
   alias WebDriverClient.ProtocolMismatchError
   alias WebDriverClient.ServerStatus
   alias WebDriverClient.Session
+  alias WebDriverClient.ShadowRoot
   alias WebDriverClient.Size
   alias WebDriverClient.UnexpectedResponseError
   alias WebDriverClient.W3CWireProtocolClient
@@ -440,6 +441,24 @@ defmodule WebDriverClient do
       parse_with_fallbacks(http_response, protocol,
         jwp: &JWPCommands.FindElementsFromElement.parse_response/1,
         w3c: &W3CCommands.FindElementsFromElement.parse_response/1
+      )
+    end
+  end
+
+  @doc """
+  Find shadow root element from the given element.
+  """
+  @spec find_shadow_root_element(Session.t(), Element.t()) ::
+          {:ok, {:ok, ShadowRoot.t()}} | {:error, reason}
+  def find_shadow_root_element(%Session{config: %Config{protocol: protocol}} = session, element) do
+    with {:ok, http_response} <-
+           send_request_for_protocol(protocol,
+             jwp: fn -> JWPCommands.FindShadowRootElement.send_request(session, element) end,
+             w3c: fn -> W3CCommands.FindShadowRootElement.send_request(session, element) end
+           ) do
+      parse_with_fallbacks(http_response, protocol,
+        jwp: &JWPCommands.FindShadowRootElement.parse_response/1,
+        w3c: &W3CCommands.FindShadowRootElement.parse_response/1
       )
     end
   end

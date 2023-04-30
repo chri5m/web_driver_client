@@ -167,6 +167,12 @@ defmodule WebDriverClient.JSONWireProtocolClient.TestResponses do
     |> map(&Jason.encode!/1)
   end
 
+  def find_shadow_root_response do
+    shadow_root()
+    |> jwp_response()
+    |> map(&Jason.encode!/1)
+  end
+
   def find_elements_response(list_opts \\ [max_length: 10]) do
     element()
     |> list_of(list_opts)
@@ -344,6 +350,10 @@ defmodule WebDriverClient.JSONWireProtocolClient.TestResponses do
 
   def element do
     fixed_map(%{"ELEMENT" => string(:ascii, min_length: 1, max_length: 20)})
+  end
+
+  def shadow_root do
+    fixed_map(%{"SHADOW_ROOT" => string(:ascii, min_length: 1, max_length: 20)})
   end
 
   def jwp_response(value, opts \\ []) do

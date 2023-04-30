@@ -3,6 +3,7 @@ defmodule WebDriverClient.W3CWireProtocolClient.TestResponses do
   use ExUnitProperties
 
   @web_element_identifier "element-6066-11e4-a52e-4f735466cecf"
+  @shadow_root_element_identifier "shadow-6066-11e4-a52e-4f735466cecf"
 
   def start_session_response do
     constant(%{
@@ -172,6 +173,12 @@ defmodule WebDriverClient.W3CWireProtocolClient.TestResponses do
     |> map(&Jason.encode!/1)
   end
 
+  def find_shadow_root_response do
+    %{"value" => shadow_root()}
+    |> fixed_map()
+    |> map(&Jason.encode!/1)
+  end
+
   def fetch_active_element_response do
     %{"value" => element()}
     |> fixed_map()
@@ -314,6 +321,10 @@ defmodule WebDriverClient.W3CWireProtocolClient.TestResponses do
 
   def element do
     fixed_map(%{@web_element_identifier => string(:ascii, min_length: 1, max_length: 20)})
+  end
+
+  def shadow_root do
+    fixed_map(%{@shadow_root_element_identifier => string(:ascii, min_length: 1, max_length: 20)})
   end
 
   defp timeouts do

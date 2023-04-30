@@ -7,6 +7,7 @@ defmodule WebDriverClient.TestData do
   alias WebDriverClient.Config
   alias WebDriverClient.Element
   alias WebDriverClient.Session
+  alias WebDriverClient.ShadowRoot
 
   @spec session(keyword()) :: StreamData.t(Session.t())
   def session(opts \\ []) when is_list(opts) do
@@ -39,6 +40,16 @@ defmodule WebDriverClient.TestData do
     |> map(&struct!(Element, &1))
   end
 
+  @spec shadow_root(keyword) :: StreamData.t(ShadowRoot.t())
+  def shadow_root(opts \\ []) when is_list(opts) do
+    [
+      id: shadow_root_id()
+    ]
+    |> Keyword.merge(opts)
+    |> fixed_map()
+    |> map(&struct!(ShadowRoot, &1))
+  end
+
   @spec session_id :: StreamData.t(Session.id())
   def session_id do
     string(:alphanumeric, length: 20)
@@ -46,6 +57,11 @@ defmodule WebDriverClient.TestData do
 
   @spec element_id :: StreamData.t(Session.id())
   def element_id do
+    string(:alphanumeric, length: 20)
+  end
+
+  @spec shadow_root_id :: StreamData.t(Session.id())
+  def shadow_root_id do
     string(:alphanumeric, length: 20)
   end
 

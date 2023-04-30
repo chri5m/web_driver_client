@@ -7,6 +7,7 @@ defmodule WebDriverClient.W3CWireProtocolClient.ResponseParser do
   alias WebDriverClient.Element
   alias WebDriverClient.HTTPResponse
   alias WebDriverClient.Session
+  alias WebDriverClient.ShadowRoot
   alias WebDriverClient.W3CWireProtocolClient
   alias WebDriverClient.W3CWireProtocolClient.Cookie
   alias WebDriverClient.W3CWireProtocolClient.LogEntry
@@ -19,6 +20,7 @@ defmodule WebDriverClient.W3CWireProtocolClient.ResponseParser do
   @type url :: W3CWireProtocolClient.url()
 
   @web_element_identifier "element-6066-11e4-a52e-4f735466cecf"
+  @shadow_root_element_identifier "shadow-6066-11e4-a52e-4f735466cecf"
 
   @spec parse_response(HTTPResponse.t()) ::
           {:ok, Response.t()} | {:error, UnexpectedResponseError.t()}
@@ -150,10 +152,18 @@ defmodule WebDriverClient.W3CWireProtocolClient.ResponseParser do
     end
   end
 
-  @spec parse_element(Response.t()) :: {:ok, Element.t()} | {:error, UnexpectedResponseError.t()}
+  @spec parse_element(Response.t()) ::
+          {:ok, Element.t()} | {:ok, ShadowRoot.t()} | {:error, UnexpectedResponseError.t()}
   def parse_element(%Response{body: %{"value" => %{@web_element_identifier => element_id}}})
       when is_binary(element_id) do
     {:ok, %Element{id: element_id}}
+  end
+
+  def parse_element(%Response{
+        body: %{"value" => %{@shadow_root_element_identifier => shadow_root_id}}
+      })
+      when is_binary(shadow_root_id) do
+    {:ok, %ShadowRoot{id: shadow_root_id}}
   end
 
   def parse_element(%Response{body: body}) do

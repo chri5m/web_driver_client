@@ -15,6 +15,7 @@ defmodule WebDriverClient.JSONWireProtocolClient.ResponseParser do
   alias WebDriverClient.JSONWireProtocolClient.UnexpectedResponseError
   alias WebDriverClient.JSONWireProtocolClient.WebDriverError
   alias WebDriverClient.Session
+  alias WebDriverClient.ShadowRoot
 
   defguardp is_status(term) when is_integer(term) and term >= 0
 
@@ -168,9 +169,15 @@ defmodule WebDriverClient.JSONWireProtocolClient.ResponseParser do
     end
   end
 
-  @spec parse_element(Response.t()) :: {:ok, Element.t()} | {:error, UnexpectedResponseError.t()}
+  @spec parse_element(Response.t()) ::
+          {:ok, Element.t()} | {:ok, ShadowRoot.t()} | {:error, UnexpectedResponseError.t()}
   def parse_element(%Response{value: %{"ELEMENT" => element_id}}) when is_binary(element_id) do
     {:ok, %Element{id: element_id}}
+  end
+
+  def parse_element(%Response{value: %{"SHADOW_ROOT" => shadow_root_id}})
+      when is_binary(shadow_root_id) do
+    {:ok, %ShadowRoot{id: shadow_root_id}}
   end
 
   def parse_element(%Response{http_response: http_response}) do
